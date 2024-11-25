@@ -1,0 +1,37 @@
+.dataTables_paginate {
+    display: flex;
+    align-items: center;
+}
+
+.paginate_button {
+    padding: 8px 12px;
+    margin: 0 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    text-decoration: none;
+    color: #007bff;
+    background-color: #f8f9fa;
+    transition: background-color 0.3s;
+}
+
+.paginate_button:hover {
+    background-color: #e2e6ea;
+}
+
+.paginate_button.current {
+    background-color: #007bff;
+    color: white;
+}
+
+.paginate_button.disabled {
+    color: #6c757d;
+}
+
+#dataTable_filter {
+    float: left; /* Mengapungkan elemen ke kiri */
+    margin-right: 20px; /* Jarak antara elemen pencarian dan elemen lain (jika ada) */
+}
+
+.dataTables_length {
+    float: right; /* Mengapungkan elemen ke kanan */
+}
