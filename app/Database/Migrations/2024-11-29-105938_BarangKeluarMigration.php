@@ -25,12 +25,23 @@ class BarangKeluarMigration extends Migration
             'jumlah' => [
                 'type' => 'INT',
             ],
+            'id_kondisi' => [
+                'type' => 'INT',
+                'unsigned' => true,
+            ],
             'tanggal_keluar' => [
                 'type' => 'DATE',
             ],
             'nama_penanggung_jawab' => [
                 'type' => 'VARCHAR',
                 'constraint' => '50',
+            ],
+            'lama_peminjaman' => [
+                'type' => 'INT',
+                'unsigned' => true,
+            ],
+            'estimasi_pengembalian' => [
+                'type' => 'DATE',
             ],
             'alasan' => [
                 'type' => 'VARCHAR',

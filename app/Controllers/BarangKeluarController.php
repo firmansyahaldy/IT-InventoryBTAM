@@ -4,20 +4,22 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use CodeIgniter\HTTP\ResponseInterface;
-
 use App\Models\BarangKeluarModel;
 use App\Models\BarangModel;
+use App\Models\KondisiModel;
 
 class BarangKeluarController extends BaseController
 {
     protected $barangKeluarModel;
     protected $barangModel;
+    protected $kondisiModel;
     protected $session;
 
     public function __construct()
     {
         $this->barangKeluarModel = new BarangKeluarModel();
         $this->barangModel = new BarangModel(); // Untuk mendapatkan data barang
+        $this->kondisiModel = new KondisiModel();
         $this->session = \config\Services::session();
     }
 
@@ -31,8 +33,9 @@ class BarangKeluarController extends BaseController
     {
         $data = [
             'title' => 'Barang Keluar',
-            'barangKeluar' => $this->barangKeluarModel->findAll(),
+            'barangKeluar' => $this->barangKeluarModel->getBarangKeluar(),
             'barang' => $this->barangModel->findAll(), // Dapatkan data barang untuk dropdown
+            'kondisi' => $this->kondisiModel->findAll(),
         ];
         $data['userRole'] = $this->getUserRole();
 
@@ -48,6 +51,7 @@ class BarangKeluarController extends BaseController
             'jumlah' => 'required|integer|greater_than[0]',
             'tanggal_keluar' => 'required|valid_date[Y-m-d]',
             'nama_penanggung_jawab' => 'required|max_length[50]',
+            'lama_peminjaman' => 'required|integer|greater_than[0]',
             'alasan' => 'required|max_length[255]',
         ])) {
             // log_message('debug', 'Data yang dikirim: ' . print_r($this->request->getPost(), true));
@@ -73,8 +77,11 @@ class BarangKeluarController extends BaseController
             'id_barang' => $this->request->getPost('id_barang'),
             'nama_barang' => $barang['nama_barang'],
             'jumlah' => $this->request->getPost('jumlah'),
+            'id_kondisi' => $barang['id_kondisi'],
             'tanggal_keluar' => $this->request->getPost('tanggal_keluar'),
-            'nama_penanggung_jawab' => $this->request->getPost('nama_penanggung_jawab'),
+            // 'nama_penanggung_jawab' => $this->request->getPost('nama_penanggung_jawab'),
+            'nama_penanggung_jawab' => session('nama_user'),
+            'lama_peminjaman' => $this->request->getPost('lama_peminjaman'),
             'alasan' => $this->request->getPost('alasan'),
             'status_pengembalian' => 'Belum Dikembalikan',
             'tanggal_pengembalian' => null
@@ -85,48 +92,60 @@ class BarangKeluarController extends BaseController
             'kuantitas' => $barang['kuantitas'] - $jumlahKeluar,
         ]);
 
-        return redirect()->to('dashboard/barang_keluar')->with('success', 'Data barang keluar berhasil ditambahkan');
+        return redirect()->to('dashboard/barang_keluar')->with('success', 'Permohonan barang keluar berhasil ditambahkan');
     }
 
     // Fungsi untuk mengelola pengembalian barang
     public function returnItem($id_barang_keluar)
     {
+        $id_kondisi = $this->request->getGet('id_kondisi'); // Ambil dari query string
+    
+        if (!$id_kondisi) {
+            return $this->response->setJSON([
+                'success' => false,
+                'message' => 'Silakan pilih kondisi barang sebelum mengembalikan.'
+            ]);
+        }
+    
         // Ambil data barang keluar berdasarkan ID
         $barangKeluar = $this->barangKeluarModel->find($id_barang_keluar);
-
+    
         if (!$barangKeluar || $barangKeluar['status_pengembalian'] === 'Sudah Dikembalikan') {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Barang sudah dikembalikan atau data tidak valid.'
             ]);
         }
-
+    
         // Ambil data barang terkait
         $barang = $this->barangModel->find($barangKeluar['id_barang']);
-
+    
         if (!$barang) {
             return $this->response->setJSON([
                 'success' => false,
                 'message' => 'Barang tidak ditemukan.'
             ]);
         }
-
-        // Tambahkan kembali kuantitas barang yang dikembalikan
+    
+        // Perbarui kondisi barang
         $this->barangModel->update($barangKeluar['id_barang'], [
             'kuantitas' => $barang['kuantitas'] + $barangKeluar['jumlah'],
+            'id_kondisi' => $id_kondisi, // Update kondisi barang
         ]);
-
-        // Update status pengembalian barang
+    
+        // Update status pengembalian
         $this->barangKeluarModel->update($id_barang_keluar, [
-            'status_pengembalian' => 'Sudah Dikembalikan', // Set status menjadi sudah dikembalikan
-            'tanggal_kembali' => date('Y-m-d'), // Set tanggal kembali
+            'status_pengembalian' => 'Sudah Dikembalikan',
+            'tanggal_kembali' => date('Y-m-d'),
+            'id_kondisi' => $id_kondisi,
         ]);
-
+    
         return $this->response->setJSON([
             'success' => true,
             'message' => 'Barang berhasil dikembalikan.'
         ]);
     }
+    
 
     public function getBarangKeluar($id_barang_keluar)
     {
@@ -172,6 +191,7 @@ class BarangKeluarController extends BaseController
             // 'barangKeluar' => $this->barangKeluarModel->findAll(),
             'userRole' => $userRole, // Jangan lupa mengirim variabel userRole
             'barang' => $this->barangModel->findAll(), // Dapatkan data barang untuk dropdown
+            'kondisi' => $this->kondisiModel->findAll(), // Dapatkan data kondisi untuk dropdown
             'barangKeluar' => $barangKeluar,
         ]);
     }
@@ -194,5 +214,12 @@ class BarangKeluarController extends BaseController
                 'stok' => 0
             ]);
         }
+    }
+
+    public function getKondisi()
+    {
+        $kondisi = $this->kondisiModel->findAll();
+
+        return $this->response->setJSON($kondisi);
     }
 }

@@ -17,6 +17,11 @@ class MaintenanceMigration extends Migration
                 'constraint' => 64,
                 'unsigned' => true,
             ],
+            'nama_barang' => [
+                'type' => 'VARCHAR',
+                'constraint' => 255,
+                'null' => true,
+            ],
             'deskripsi' => [
                 'type' => 'TEXT',
             ],

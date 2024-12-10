@@ -14,13 +14,16 @@ class StatusMaintenanceSeeder extends Seeder
                 'status_maintenance' => 'Pendding',
             ],
             [
-                'status_maintenance' => 'Sedang Maintenance',
+                'status_maintenance' => 'Sedang Proses',
             ],
             [
-                'status_maintenance' => 'Selesai Maintenance',
+                'status_maintenance' => 'Selesai Pemeliharaan',
             ],
             [
                 'status_maintenance' => 'Membutuhkan Perbaikan',
+            ],
+            [
+                'status_maintenance' => 'Tidak Bisa Diperbaiki',
             ],
         ];
 

@@ -11,7 +11,7 @@ class BarangSeeder extends Seeder
         $builder = $db->table('barang');
         $data = [
             [
-                'kode_barang' => 1,
+                'kode_barang' => 'BR001',
                 'id_kategori' => 7,
                 'nama_barang' => 'Laptop Dell XPS 13',
                 'merk' => 'Dell',
@@ -28,7 +28,7 @@ class BarangSeeder extends Seeder
                 'maintenance_selanjutnya' => date('Y-m-d', strtotime('+1 year')),
             ],
             [
-                'kode_barang' => 2,
+                'kode_barang' => 'BR002',
                 'id_kategori' => 11,
                 'nama_barang' => 'Printer HP LaserJet Pro',
                 'merk' => 'HP',
@@ -42,6 +42,23 @@ class BarangSeeder extends Seeder
                 'masa_garansi' => '2024-10-10',
                 'serial_number' => 'SN987654321',
                 'id_lokasi_barang' => 2,
+                'maintenance_selanjutnya' => date('Y-m-d', strtotime('+1 year')),
+            ],
+            [
+                'kode_barang' => 'BR003',
+                'id_kategori' => 9,
+                'nama_barang' => 'swith huawei',
+                'merk' => 'huawei',
+                'spesifikasi' => 'huawei switch 12x',
+                'tipe' => 'swith',
+                'tgl_pembelian' => '2022-10-5',
+                'harga_pembelian' => 2000000,
+                'id_status_barang' => 1,
+                'kuantitas' => 10,
+                'id_kondisi' => 1,
+                'masa_garansi' => '2025-10-8',
+                'serial_number' => 'SN987654321',
+                'id_lokasi_barang' => 1,
                 'maintenance_selanjutnya' => date('Y-m-d', strtotime('+1 year')),
             ],
         ];

@@ -27,12 +27,17 @@ class UserMigration extends Migration
                 'type' => 'VARCHAR',
                 'constraint' => '50',
             ],
+            'id_jabatan' => [
+                'type' => 'INT',
+                'unsigned' => true,
+            ],
             'id_role' => [
                 'type' => 'INT',
                 'unsigned' => true,
             ],
         ]);
         $this->forge->addKey('id_user', true);
+        $this->forge->addForeignKey('id_jabatan', 'jabatan', 'id_jabatan', 'CASCADE', 'CASCADE');
         $this->forge->addForeignKey('id_role', 'role', 'id_role', 'CASCADE', 'CASCADE');
         $this->forge->createTable('user');
     }

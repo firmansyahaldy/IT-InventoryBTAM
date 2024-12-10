@@ -61,7 +61,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/laporan">
                     <i class="fas fa-fw fa-list"></i>
-                    <span>Maintenance</span></a>
+                    <span>Pemeliharaan</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/barang_keluar">
@@ -181,10 +181,32 @@
                 <div class="container-fluid">
 
                     <div class="container">
-                        <h2>Laporan</h2>
+                        <div class="d-sm-flex align-items-center justify-content-between mb-4">
+                            <h1 class="h3 mb-0 text-gray-800">Export Laporan</h1>
+                            <?php if ($userRole === 'Super Admin'): ?>
+                                <!-- Success Message -->
+                                <?php if (session()->getFlashdata('success')): ?>
+                                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                                        <?= session()->getFlashdata('success'); ?>
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
+                                <!-- Error Message -->
+                                <?php if (session()->getFlashdata('error')): ?>
+                                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                        <?= session()->getFlashdata('error'); ?>
+                                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                            <span aria-hidden="true">&times;</span>
+                                        </button>
+                                    </div>
+                                <?php endif; ?>
+                            <?php endif; ?>
+                        </div>
                         <form id="laporanForm" action="">
                             <div class="form-group">
-                                <label for="table">Pilih Tabel:</label>
+                                <label for="table">Pilih Data yang akan di export:</label>
                                 <select id="table" class="form-control">
                                     <?php foreach ($tables as $table): ?>
                                         <option value="<?= $table ?>"><?= ucfirst($table) ?></option>
@@ -274,7 +296,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="suratJalanLabel">Input Data Surat Jalan</h5>
+                    <h5 class="modal-title" id="suratJalanLabel">Input Data Pinjam Barang</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -282,14 +304,63 @@
                 <div class="modal-body">
                     <form id="suratJalanForm">
                         <div class="form-group">
+                            <label for="peminjam">Nama Peminjam</label>
+                            <select class="form-control" id="peminjam">
+                                <option value="">Pilih Nama Peminjam</option>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?= $user['id_user'] ?>" data-jabatan="<?= $user['nama_jabatan'] ?>">
+                                        <?= $user['nama_user'] ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="jabatan">Jabatan</label>
+                            <input type="text" class="form-control" id="jabatan" placeholder="Jabatan Peminjam" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="hp">Nomor HP Peminjam</label>
+                            <input type="text" class="form-control" id="hp" placeholder="Masukkan Nomor HP Peminjam">
+                        </div>
+                        <div class="form-group">
                             <label for="alamatTujuan">Alamat Tujuan</label>
                             <input type="text" class="form-control" id="alamatTujuan" placeholder="Masukkan alamat tujuan">
                         </div>
                         <div class="form-group">
-                            <label for="penanggungJawab">Penanggung Jawab</label>
-                            <input type="text" class="form-control" id="penanggungJawab" placeholder="Nama penanggung jawab">
+                            <label for="keperluan">Keperluan</label>
+                            <input type="text" class="form-control" id="keperluan" placeholder="Tuliskan Keperluan Meminjam Barang">
                         </div>
                         <button type="button" class="btn btn-primary" id="submitSuratJalan">Cetak PDF</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk pengembalian -->
+    <div class="modal fade" id="pengembalian" tabindex="-1" role="dialog" aria-labelledby="pengembalianLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="pengembalianLabel">Data pengembalian</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form id="pengembalianForm">
+                        <div class="form-group">
+                            <label for="peminjam">Nama Peminjam</label>
+                            <select class="form-control" id="peminjamPengembalian">
+                                <option value="">Pilih Nama Peminjam</option>
+                                <?php foreach ($users as $user): ?>
+                                    <option value="<?= $user['id_user'] ?>" data-jabatan="<?= $user['nama_jabatan'] ?>">
+                                        <?= $user['nama_user'] ?>
+                                    </option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <button type="button" class="btn btn-primary" id="submitPengembalian">Cetak PDF</button>
                     </form>
                 </div>
             </div>
@@ -318,7 +389,7 @@
         // Tampilkan filter tanggal hanya untuk tabel barang-keluar
         $('#table').change(function() {
             var table = $('#table').val();
-            if (table === 'barang-keluar') {
+            if (table === 'barang-keluar' || table === 'pengembalian-barang') {
                 $('#dateFilter').show(); // Tampilkan filter tanggal
             } else {
                 $('#dateFilter').hide(); // Sembunyikan filter tanggal
@@ -335,7 +406,7 @@
                 table: table
             };
 
-            if (table === 'barang-keluar') {
+            if (table === 'barang-keluar' || table === 'pengembalian-barang') {
                 data.startDate = startDate;
                 data.endDate = endDate;
             }
@@ -383,38 +454,71 @@
 
         // Tampilkan modal form surat jalan sebelum cetak PDF untuk tabel barang-keluar
         $('#exportPDF').click(function() {
-            var table = $('#table').val();
+            var table = $('#table').val(); // Ambil nilai tabel
+
             if (table === 'barang-keluar') {
                 // Tampilkan modal surat jalan
                 $('#suratJalanModal').modal('show');
+            } else if (table === 'pengembalian-barang') {
+                // Tampilkan modal pengembalian
+                $('#pengembalian').modal('show');
             } else {
+                // Cetak PDF jika tabel tidak sesuai kondisi di atas
                 cetakPDF(table);
             }
         });
 
         $('#submitSuratJalan').click(function() {
+            var peminjam = $('#peminjam').val();
+            var jabatan = $('#jabatan').val();
             var alamatTujuan = $('#alamatTujuan').val();
-            var penerima = $('#penanggungJawab').val();
+            var keperluan = $('#keperluan').val();
+            var hp = $('#hp').val();
 
-            console.log('Alamat Tujuan:', alamatTujuan); // Debug untuk cek nilai alamat tujuan
-            console.log('Penerima:', penerima); // Debug untuk cek nilai penerima
-
-            if (alamatTujuan && penerima) {
+            // Validasi apakah semua field terisi
+            if (alamatTujuan && peminjam && jabatan && keperluan && hp) {
                 // Kirim ke server untuk mencetak surat jalan
-                cetakPDF('barang-keluar', alamatTujuan, penerima);
+                cetakPDF('barang-keluar', alamatTujuan, peminjam, jabatan, keperluan, hp); // Keperluan dikirimkan
                 $('#suratJalanModal').modal('hide');
             } else {
                 alert('Harap isi semua field!');
             }
         });
 
-        function cetakPDF(table, alamatTujuan = '', penerima = '') {
-            var startDate = $('#startDate').val();
-            var endDate = $('#endDate').val();
-        
-            console.log('URL yang dibentuk:', '<?= base_url('dashboard/laporancontroller/export/') ?>' + table + '/pdf?startDate=' + startDate + '&endDate=' + endDate + '&alamatTujuan=' + alamatTujuan + '&penerima=' + penerima); // Debug URL
+        $('#submitPengembalian').click(function() {
+            var peminjam = $('#pengembalian #peminjamPengembalian').val(); // Tambahkan scope modal
 
-            var url = '<?= base_url('dashboard/laporancontroller/export/') ?>' + table + '/pdf?startDate=' + startDate + '&endDate=' + endDate + '&alamatTujuan=' + alamatTujuan + '&penerima=' + penerima;
+            // Validasi apakah semua field terisi
+            if (peminjam) {
+                cetakPDF('pengembalian-barang', '', peminjam);
+                $('#pengembalian').modal('hide');
+            } else {
+                alert('Harap isi semua field!');
+            }
+        });
+
+        function cetakPDF(table) {
+            let url = '<?= base_url('dashboard/laporancontroller/export/') ?>' + table + '/pdf';
+
+            if (table === 'pengembalian-barang') {
+                // Kirim parameter yang relevan untuk pengembalian-barang
+                const peminjam = $('#peminjamPengembalian').val();
+                const startDate = $('#startDate').val();
+                const endDate = $('#endDate').val();
+                url += '?peminjam=' + peminjam + '&startDate=' + startDate + '&endDate=' + endDate;
+            } else if (table === 'barang-keluar') {
+                // Kirim semua parameter untuk barang-keluar
+                const peminjam = $('#peminjam').val();
+                const startDate = $('#startDate').val();
+                const endDate = $('#endDate').val();
+                const jabatan = $('#jabatan').val() || '';
+                const alamatTujuan = $('#alamatTujuan').val() || '';
+                const keperluan = $('#keperluan').val() || '';
+                const hp = $('#hp').val() || '';
+                url += '?peminjam=' + peminjam + '&startDate=' + startDate + '&endDate=' + endDate + '&jabatan=' + jabatan + '&alamatTujuan=' + alamatTujuan + '&keperluan=' + keperluan + '&hp=' + hp;
+            }
+
+            // Redirect untuk tabel selain pengembalian-barang dan barang-keluar (tidak memerlukan parameter tambahan)
             window.location.href = url;
         }
 
@@ -431,13 +535,21 @@
             }
         });
 
-
         // Auto-close alert after 3 seconds
         window.setTimeout(function() {
             $(".alert").fadeTo(500, 0).slideUp(500, function() {
                 $(this).remove();
             });
         }, 3000);
+
+        $(document).ready(function() {
+            $('#peminjam').change(function() {
+                // Ambil data jabatan dari atribut data-jabatan
+                let selectedOption = $(this).find(':selected');
+                let jabatan = selectedOption.data('jabatan') || '';
+                $('#jabatan').val(jabatan);
+            });
+        });
     </script>
 </body>
 

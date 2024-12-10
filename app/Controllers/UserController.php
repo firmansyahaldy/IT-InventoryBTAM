@@ -1,6 +1,9 @@
 <?php
+
 namespace App\Controllers;
+
 use App\Controllers\BaseController;
+use App\Models\JabatanModel;
 use CodeIgniter\HTTP\ResponseInterface;
 
 // Mengimpor model yang digunakan
@@ -13,6 +16,7 @@ class UserController extends BaseController
     // Mendeklarasikan properti untuk menyimpan instance model dan session
     protected $userModel;
     protected $roleModel;
+    protected $jabatanModel;
     protected $session;
 
     // Konstruktor untuk menginisialisasi model dan session
@@ -22,6 +26,8 @@ class UserController extends BaseController
         $this->userModel = new UserModel();
         // Membuat instance RoleModel
         $this->roleModel = new RoleModel();
+        // Membuat instance JabatanModel
+        $this->jabatanModel = new JabatanModel();
         // Menginisialisasi session
         $this->session = \config\Services::session();
     }
@@ -42,6 +48,8 @@ class UserController extends BaseController
         $data['roles'] = $this->roleModel->findAll();
         // Mengambil role user yang tersimpan di session
         $data['userRole'] = $this->getUserRole();
+        // Mengambil semua data jabatan dari database
+        $data['jabatans'] = $this->jabatanModel->findAll();
         // Menampilkan view user dan mengirimkan data yang dibutuhkan
         return view('user', $data);
     }
@@ -57,6 +65,7 @@ class UserController extends BaseController
             'nama_user' => $this->request->getPost('nama_user'), // Mengambil input nama user
             'password' => password_hash($this->request->getPost('password'), PASSWORD_DEFAULT), // Meng-hash password sebelum disimpan
             'id_role' => $this->request->getPost('role'), // Mengambil role user dari form
+            'id_jabatan' => $this->request->getPost('jabatan'), // Mengambil jabatan user dari form
         ];
         // Menyimpan data user baru ke database
         if ($userModel->insert($data)) {
@@ -71,23 +80,34 @@ class UserController extends BaseController
     // Method untuk mengupdate data user
     public function update()
     {
-        // Membuat instance UserModel
-        $userModel = new \App\Models\UserModel();
-        // Mengambil data yang diinputkan dari form
-        $data = [
-            'nama_user' => $this->request->getPost('nama_user'), // Mengambil input nama user
-            'id_role' => $this->request->getPost('role'), // Mengambil role user yang dipilih
-        ];
-        // Mengambil ID user yang ingin diupdate
         $id_user = $this->request->getPost('id_user');
-        // Mengupdate data user berdasarkan ID user
-        if ($userModel->update($id_user, $data)) {
-            // Jika berhasil, redirect ke halaman daftar user dengan pesan sukses
-            return redirect()->to('/dashboard/user')->with('success', 'User berhasil diupdate.');
+        $nama_user = $this->request->getPost('edit_nama_user');
+        $role = $this->request->getPost('edit_role');
+        $jabatan = $this->request->getPost('edit_jabatan');
+
+        // Ambil password baru dari input
+        $password = $this->request->getPost('edit_password');
+
+        // Ambil data user lama
+        $user = $this->userModel->find($id_user);
+
+        if ($password) {
+            // Jika password baru diberikan, hash sebelum menyimpan
+            $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
         } else {
-            // Jika gagal, redirect kembali ke form dengan pesan error
-            return redirect()->back()->with('error', 'Gagal mengupdate user.');
+            // Jika tidak, gunakan password lama
+            $hashedPassword = $user['password'];
         }
+
+        // Update data user
+        $this->userModel->update($id_user, [
+            'nama_user' => $nama_user,
+            'id_role' => $role,
+            'id_jabatan' => $jabatan,
+            'password' => $hashedPassword,
+        ]);
+
+        return redirect()->to('/dashboard/user')->with('success', 'User berhasil diperbarui.');
     }
 
     // Method untuk menghapus user berdasarkan ID user
@@ -116,15 +136,12 @@ class UserController extends BaseController
     // Method untuk mendapatkan data user berdasarkan ID user
     public function getUser($id_user)
     {
-        // Membuat instance UserModel
-        $userModel = new \App\Models\UserModel();
-        // Mencari user berdasarkan ID
-        $user = $userModel->find($id_user);
-        // Jika user ditemukan, kirimkan data user dalam format JSON
+        // Ambil data user lengkap dari model
+        $user = $this->userModel->getUser($id_user);
+
         if ($user) {
-            return $this->response->setJSON($user);
+            return $this->response->setJSON($user); // Kirimkan data user dalam format JSON
         } else {
-            // Jika user tidak ditemukan, kirimkan respons 404 dengan pesan "User not found"
             return $this->response->setStatusCode(404)->setBody('User not found');
         }
     }

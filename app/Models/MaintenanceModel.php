@@ -14,6 +14,7 @@ class MaintenanceModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'id_barang',
+        'nama_barang',
         'deskripsi',
         'maintenance_selanjutnya',
         'id_status_maintenance',
@@ -28,7 +29,6 @@ class MaintenanceModel extends Model
             ->join('status_maintenance', 'maintenance.id_status_maintenance = status_maintenance.id_status_maintenance')
             ->findAll();
     }
-
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
 
@@ -55,6 +55,9 @@ class MaintenanceModel extends Model
         'id_barang' => [
             'required' => 'Kode barang harus diisi',
             'is_not_unique' => 'Kode barang tidak valid',
+        ],
+        'nama_barang' => [
+            'required' => 'Nama barang harus diisi',
         ],
         'deskripsi' => [
             'required' => 'Deskripsi maintenance harus diisi',

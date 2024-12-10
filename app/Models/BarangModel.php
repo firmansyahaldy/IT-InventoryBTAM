@@ -51,6 +51,27 @@ class BarangModel extends Model
             ->findAll();
     }
 
+    public function getBarang($id_barang)
+    {
+        return $this->select('barang.*, kategori.kategori_item, status_barang.status_barang, kondisi.kondisi_item, lokasi_barang.lokasi_barang')
+            ->join('kategori', 'barang.id_kategori = kategori.id_kategori', 'left')
+            ->join('status_barang', 'barang.id_status_barang = status_barang.id_status_barang', 'left')
+            ->join('kondisi', 'barang.id_kondisi = kondisi.id_kondisi', 'left')
+            ->join('lokasi_barang', 'barang.id_lokasi_barang = lokasi_barang.id_lokasi_barang', 'left')
+            ->
+        where('barang.id_barang', $id_barang)
+            ->first();
+    }
+
+    public function getStackedBarChartData()
+    {
+        return $this->select('kategori_item AS kategori, kondisi_item AS kondisi, COUNT(*) AS jumlah')
+        ->join('kategori', 'barang.id_kategori = kategori.id_kategori')
+        ->join('kondisi', 'barang.id_kondisi = kondisi.id_kondisi')
+        ->groupBy('kategori, kondisi')
+        ->findAll();
+    }
+
     protected bool $allowEmptyInserts = false;
     protected bool $updateOnlyChanged = true;
 
@@ -66,7 +87,7 @@ class BarangModel extends Model
 
     // Validation
     protected $validationRules      = [
-        'kode_barang' => 'required|integer|is_unique[barang.kode_barang]',
+        'kode_barang' => 'required|max_length[64]|is_unique[barang.kode_barang]',
         'id_kategori' => 'required|integer|is_not_unique[kategori.id_kategori]',
         'nama_barang' => 'required|max_length[255]',
         'merk' => 'required|max_length[255]',

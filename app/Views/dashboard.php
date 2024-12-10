@@ -81,7 +81,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/laporan">
                     <i class="fas fa-fw fa-list"></i>
-                    <span>Maintenance</span></a>
+                    <span>Pemeliharaan</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/barang_keluar">
@@ -248,7 +248,7 @@
                                 <div class="card-body">
                                     <div class="row no-gutters align-items-center">
                                         <div class="col mr-2">
-                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">item (butuh maintenance)
+                                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">item (Butuh Pemeliharaan)
                                             </div>
                                             <div class="row no-gutters align-items-center">
                                                 <div class="col-auto">
@@ -266,24 +266,52 @@
                             </div>
                         </div>
                     </div>
-
-                    <!-- pie chart -->
-                    <div class="row">
-                        <div class="col-xl-4 col-lg-5 width-300">
+                    <div class="row justify-content-between">
+                        <!-- Pie Chart 1 -->
+                        <div class="col-md-5">
                             <div class="card shadow mb-4">
                                 <div class="card-body">
                                     <div class="font-weight-bold text-gray-800">
                                         <h5>Distribusi Kondisi Barang</h5>
                                     </div>
                                     <div class="chart-pie pt-4 pb-2">
-                                        <canvas id="myPieChart" style="height: 300px;"></canvas>
+                                        <canvas id="pieDistribusiBarang" style="height: 300px; width: 400px;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Pie Chart 2 -->
+                        <div class="col-md-5">
+                            <div class="card shadow mb-4">
+                                <div class="card-body">
+                                    <div class="font-weight-bold text-gray-800">
+                                        <h5>Status Pengembalian Barang Keluar</h5>
+                                    </div>
+                                    <div class="chart-pie pt-4 pb-2">
+                                        <canvas id="barangPieChart" style="height: 250px; width: 400px;"></canvas>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <!-- /.container-fluid -->
 
+                    <div class="row justify-content-between">
+                        <!-- Stacked Bar Chart -->
+                        <div class="col-md-12">
+                            <div class="card shadow mb-4">
+                                <div class="card-body">
+                                    <div class="font-weight-bold text-gray-800">
+                                        <h5>Jumlah Barang Berdasarkan Kategori dan Kondisi</h5>
+                                    </div>
+                                    <div>
+                                        <canvas id="stackedBarChart" style="height: 400px; width: 100%;"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- /.container-fluid -->
                 </div>
                 <!-- End of Main Content -->
 
@@ -342,58 +370,99 @@
         <script src="<?= base_url('sb2/vendor/chart.js/Chart.min.js') ?>"></script>
 
         <script>
-            var kondisiBarang = <?php echo json_encode($kondisiBarang); ?>;
+            const stackedBarData = <?php echo json_encode($stackedBarChartData); ?>;
 
-            // Siapkan array untuk label dan datanya
-            var labels = [];
-            var data = [];
+            // Transformasi data untuk Chart.js
+            const categories = [...new Set(stackedBarData.map(item => item.kategori))];
+            const conditions = [...new Set(stackedBarData.map(item => item.kondisi))];
 
-            // Loop melalui data dan ambil label dan nilai totalnya
-            kondisiBarang.forEach(function(item) {
-                labels.push(item.kondisi_item); // mengambil nilai kondisi
-                data.push(item.total); // mengambil nilai total
-            });
+            const datasets = conditions.map(condition => ({
+                label: condition,
+                data: categories.map(category => {
+                    const item = stackedBarData.find(d => d.kategori === category && d.kondisi === condition);
+                    return item ? item.jumlah : 0;
+                }),
+                backgroundColor: getRandomColor(),
+            }));
 
-            // Konfigurasi Chart.js untuk membuat pie chart
-            var ctx = document.getElementById('myPieChart').getContext('2d');
-            var myPieChart = new Chart(ctx, {
-                type: 'pie', // jenis chart yang digunakan (pie)
+            // Fungsi untuk mendapatkan warna acak
+            function getRandomColor() {
+                return `rgba(${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, ${Math.floor(Math.random() * 255)}, 0.7)`;
+            }
+
+            const ctx = document.getElementById('stackedBarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
                 data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data, // data jumlah/total
-                        backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'], // warna untuk setiap bagian pie
-                    }]
+                    labels: categories,
+                    datasets: datasets,
                 },
                 options: {
+                    indexAxis: 'y', // Mengatur chart menjadi horizontal
                     responsive: true,
                     maintainAspectRatio: false,
-                    aspectRatio: 1,
-                    legend: {
-                        display: true,
-                        position: 'bottom', // Menempatkan legend di bawah chart
-                        labels: {
-                            boxWidth: 20, // Ukuran kotak warna di sebelah legend
-                            padding: 15, // Spasi antara legend
-                            fontColor: '#333', // Warna teks legend
-                            fontSize: 14, // Ukuran font legend
-                            generateLabels: function(chart) {
-                                var data = chart.data;
-                                if (data.labels.length) {
-                                    return data.labels.map(function(label, index) {
-                                        return {
-                                            text: label, // Sesuaikan teks legend
-                                            fillStyle: data.datasets[0].backgroundColor[index],
-                                            hidden: false,
-                                        };
-                                    });
-                                }
-                                return [];
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                        },
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true,
+                        },
+                    },
+                },
+            });
+
+            function createPieChart(canvasId, labels, data, colors) {
+                var ctx = document.getElementById(canvasId).getContext('2d');
+                return new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            data: data,
+                            backgroundColor: colors,
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        legend: {
+                            display: true,
+                            position: 'bottom',
+                            labels: {
+                                boxWidth: 20,
+                                padding: 15,
+                                fontColor: '#333',
+                                fontSize: 14,
                             }
                         }
                     }
-                }
-            });
+                });
+            }
+
+            // Data untuk masing-masing chart
+            const kondisiBarangData = <?php echo json_encode($kondisiBarang); ?>;
+            const barangKeluarData = <?php echo json_encode($barangKeluarData); ?>;
+
+            // Mengonversi data backend ke frontend
+            const kondisiLabels = kondisiBarangData.map(item => item.kondisi_item);
+            const kondisiValues = kondisiBarangData.map(item => item.total);
+
+            const barangLabels = barangKeluarData.map(item => item.status_pengembalian);
+            const barangValues = barangKeluarData.map(item => item.jumlah);
+
+            // Warna untuk chart
+            const kondisiColors = ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF'];
+            const barangColors = ['#FF6384', '#36A2EB'];
+
+            // Membuat chart menggunakan fungsi yang sama
+            createPieChart('pieDistribusiBarang', kondisiLabels, kondisiValues, kondisiColors);
+            createPieChart('barangPieChart', barangLabels, barangValues, barangColors);
         </script>
 
 </body>

@@ -61,7 +61,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/laporan">
                     <i class="fas fa-fw fa-list"></i>
-                    <span>Maintenance</span></a>
+                    <span>Pemeliharaan</span></a>
             </li>
             <li class="nav-item active">
                 <a class="nav-link" href="/dashboard/barang_keluar">
@@ -240,7 +240,12 @@
 
                                 <div class="form-group">
                                     <label for="nama_penanggung_jawab">Nama Penanggung Jawab</label>
-                                    <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" required>
+                                    <input type="text" class="form-control" id="nama_penanggung_jawab" name="nama_penanggung_jawab" value="<?= session('nama_user'); ?>" readonly>
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="lama_peminjaman">Lama Peminjaman</label>
+                                    <input type="text" class="form-control" id="lama_peminjaman" name="lama_peminjaman" required>
                                 </div>
 
                                 <div class="form-group">
@@ -286,8 +291,11 @@
                                             <th>ID</th>
                                             <th>Nama Barang</th>
                                             <th>Jumlah</th>
+                                            <th>Kondisi</th>
                                             <th>Tanggal Keluar</th>
                                             <th>Nama Penanggung Jawab</th>
+                                            <th>Lama Peminjaman</th>
+                                            <th>Estimasi Pengembalian</th>
                                             <th>Alasan</th>
                                             <th>Status Pengembalian</th>
                                             <th>Tanggal Pengembalian</th>
@@ -301,13 +309,20 @@
                                                     <td><?= $bk['id_barang_keluar']; ?></td>
                                                     <td><?= $bk['nama_barang']; ?></td>
                                                     <td><?= $bk['jumlah']; ?></td>
+                                                    <td><?= $bk['kondisi']; ?></td>
                                                     <td><?= $bk['tanggal_keluar']; ?></td>
                                                     <td><?= $bk['nama_penanggung_jawab']; ?></td>
+                                                    <td><?= $bk['lama_peminjaman']; ?> Hari</td>
+                                                    <td><?= $bk['estimasi_pengembalian']; ?></td>
                                                     <td><?= $bk['alasan']; ?></td>
                                                     <td><?= $bk['status_pengembalian']; ?></td>
                                                     <td><?= $bk['tanggal_kembali']; ?></td>
                                                     <td>
-                                                        <button class="btn btn-warning" onclick="returnItem(<?= $bk['id_barang_keluar']; ?>)">Kembalikan</button>
+                                                        <?php if ($bk['status_pengembalian'] === 'Sudah Dikembalikan'): ?>
+                                                            <button class="btn btn-secondary" disabled>Sudah Dikembalikan</button>
+                                                        <?php else: ?>
+                                                            <button class="btn btn-warning" onclick="returnItem(<?= $bk['id_barang_keluar']; ?>)">Kembalikan</button>
+                                                        <?php endif; ?>
                                                     </td>
                                                 </tr>
                                             <?php endforeach; ?>
@@ -380,7 +395,17 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    Apakah Anda yakin ingin mengembalikan barang ini?
+                    <form id="returnForm">
+                        <div class="form-group">
+                            <label for="kondisi_barang">Pilih Kondisi Barang</label>
+                            <select class="form-control" id="kondisi_barang" name="id_kondisi">
+                                <option value="">-- Pilih Kondisi --</option>
+                                <?php foreach ($kondisi as $k): ?>
+                                    <option value="<?= $k['id_kondisi']; ?>"><?= $k['kondisi_item']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                    </form>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -389,7 +414,6 @@
             </div>
         </div>
     </div>
-
 
     <!-- Bootstrap core JavaScript-->
     <script src="<?= base_url('sb2/vendor/jquery/jquery.min.js') ?>"></script>
@@ -434,41 +458,43 @@
             }
         }
 
-        let itemId; // Variabel untuk menyimpan ID barang yang akan dikembalikan
+        let itemId;
 
         function returnItem(id) {
-            itemId = id; // Simpan ID barang yang akan dikembalikan
-            $('#confirmReturnModal').modal('show'); // Tampilkan modal konfirmasi
+            itemId = id;
+            $('#confirmReturnModal').modal('show');
         }
 
-        // Event listener untuk tombol Kembalikan di modal
         document.getElementById('confirmReturnButton').addEventListener('click', function() {
-            fetch('<?= base_url("dashboard/barang_keluar/returnItem/") ?>' + itemId, {
+            const id_kondisi = document.getElementById('kondisi_barang').value;
+
+            if (!id_kondisi) {
+                alert('Silakan pilih kondisi barang sebelum mengembalikan.');
+                return;
+            }
+
+            const url = '<?= base_url("dashboard/barang_keluar/returnItem/") ?>' + itemId + '?id_kondisi=' + id_kondisi;
+
+            fetch(url, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({
-                        id_barang_keluar: itemId
-                    })
+                        'X-Requested-With': 'XMLHttpRequest' // Tambahkan header ini jika diperlukan
+                    }
                 })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        location.reload(); // Memuat ulang halaman untuk melihat data terbaru
+                        alert(data.message);
+                        location.reload();
                     } else {
-                        alert(data.message); // Tampilkan pesan error dengan alert atau flash message yang sudah ada
+                        alert(data.message);
                     }
-                    $('#confirmReturnModal').modal('hide'); // Menyembunyikan modal konfirmasi setelah selesai
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     alert('Terjadi kesalahan saat mengembalikan barang.');
-                    $('#confirmReturnModal').modal('hide'); // Menyembunyikan modal konfirmasi
                 });
         });
-
 
         $(document).ready(function() {
             // Cek apakah ada pesan sukses dari session

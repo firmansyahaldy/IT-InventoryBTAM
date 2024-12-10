@@ -69,7 +69,7 @@
 			<li class="nav-item">
 				<a class="nav-link" href="/dashboard/laporan">
 					<i class="fas fa-fw fa-list"></i>
-					<span>Maintenance</span></a>
+					<span>Pemeliharaan</span></a>
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" href="/dashboard/barang_keluar">
@@ -258,6 +258,50 @@
 									</div>
 								</div>
 							</div>
+							
+							<!-- Tabel Jabatan -->
+							<div class="col-md-6">
+								<div class="card shadow mb-4">
+									<div class="card-header py-3 d-flex justify-content-between align-items-center">
+										<h6 class="m-0 font-weight-bold text-primary">Data Jabatan</h6>
+										<?php if ($userRole === 'Super Admin'): ?>
+											<!-- Button trigger modal -->
+											<button type="button" class="btn btn-primary addBtn" data-toggle="modal" data-target="#addJabatanModal" data-table="jabatan">
+												<i class="fas fa-plus fa-sm text-white-50"></i> Tambah Jabatan
+											</button>
+										<?php endif; ?>
+									</div>
+									<div class="card-body">
+										<div class="table-responsive">
+											<table class="table table-bordered" id="jabatanTable" cellspacing="0">
+												<thead>
+													<tr>
+														<th>ID</th>
+														<th>Nama Jabatan</th>
+														<?php if ($userRole === 'Super Admin'): ?>
+															<th>Aksi</th>
+														<?php endif; ?>
+													</tr>
+												</thead>
+												<tbody>
+													<?php foreach ($jabatans as $jabatan): ?>
+														<tr>
+															<td><?= esc($jabatan['id_jabatan']) ?></td>
+															<td><?= esc($jabatan['nama_jabatan']) ?></td>
+															<?php if ($userRole === 'Super Admin'): ?>
+																<td>
+																	<button type="button" class="btn btn-warning btn-sm editBtn" data-id="<?= $jabatan['id_jabatan'] ?>" data-toggle="modal" data-target="#editJabatanModal">Edit</button>
+																	<button type="button" class="btn btn-danger btn-sm deleteBtn" data-id="<?= $jabatan['id_jabatan'] ?>" data-toggle="modal" data-target="#deleteJabatanModal">Hapus</button>
+																</td>
+															<?php endif; ?>
+														</tr>
+													<?php endforeach; ?>
+												</tbody>
+											</table>
+										</div>
+									</div>
+								</div>
+							</div>
 
 							<!-- Tabel Kategori -->
 							<div class="col-md-6">
@@ -395,13 +439,7 @@
 							<div class="col-md-6">
 								<div class="card shadow mb-4">
 									<div class="card-header py-3 d-flex justify-content-between align-items-center">
-										<h6 class="m-0 font-weight-bold text-primary">Data Status Maintenance</h6>
-										<?php if ($userRole === 'Super Admin'): ?>
-											<!-- Button trigger modal -->
-											<button type="button" class="btn btn-primary addBtn" data-toggle="modal" data-target="#addStatusMaintenanceModal" data-table="statusMaintenance">
-												<i class="fas fa-plus fa-sm text-white-50"></i> Tambah Status Maintenance
-											</button>
-										<?php endif; ?>
+										<h6 class="m-0 font-weight-bold text-primary">Data Status Pemeliharaan</h6>
 									</div>
 									<div class="card-body">
 										<div class="table-responsive">
@@ -409,7 +447,7 @@
 												<thead>
 													<tr>
 														<th>ID</th>
-														<th>Status Maintenance</th>
+														<th>Status Pemeliharaan</th>
 														<?php if ($userRole === 'Super Admin'): ?>
 															<th>Aksi</th>
 														<?php endif; ?>
@@ -599,6 +637,86 @@
 					<div class="modal-body">
 						<input type="hidden" id="deleteRoleId" name="roleId">
 						<p>Apakah kamu yakin ingin menghapus role ini?</p>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+						<button type="submit" class="btn btn-danger">Hapus</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Add Jabatan Modal -->
+	<div class="modal fade" id="addJabatanModal" tabindex="-1" role="dialog" aria-labelledby="addJabatanLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="addJabatanLabel">Tambah Jabatan</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form id="addJabatanForm" method="POST" action="<?= base_url('dashboard/data_master/jabatan/create') ?>">
+					<?= csrf_field() ?>
+					<div class="modal-body">
+						<div class="form-group">
+							<label for="jabatanName">Nama Jabatan</label>
+							<input type="text" class="form-control" id="nama_jabatan" name="nama_jabatan" required>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+						<button type="submit" class="btn btn-primary">Simpan</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Edit Jabatan Modal -->
+	<div class="modal fade" id="editJabatanModal" tabindex="-1" role="dialog" aria-labelledby="editJabatanLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="editJabatanLabel">Edit Jabatan</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form id="editJabatanForm" method="POST" action="<?= base_url('dashboard/data_master/jabatan/update/' . $jabatan['id_jabatan']) ?>">
+					<?= csrf_field() ?>
+					<div class="modal-body">
+						<input type="hidden" id="editJabatanId" name="jabatanId">
+						<div class="form-group">
+							<label for="editJabatanName">Nama Jabatan</label>
+							<input type="text" class="form-control" id="editJabatanName" name="nama_jabatan" required>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
+						<button type="submit" class="btn btn-primary">Simpan</button>
+					</div>
+				</form>
+			</div>
+		</div>
+	</div>
+
+	<!-- Delete Jabatan Modal -->
+	<div class="modal fade" id="deleteJabatanModal" tabindex="-1" role="dialog" aria-labelledby="deleteJabatanLabel" aria-hidden="true">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="deleteJabatanLabel">Hapus Jabatan</h5>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+				</div>
+				<form id="deleteJabatanForm" method="POST" action="<?= base_url('dashboard/data_master/jabatan/delete/' . $jabatan['id_jabatan']) ?>">
+					<?= csrf_field() ?>
+					<div class="modal-body">
+						<input type="hidden" id="deleteJabatanId" name="jabatanId">
+						<p>Apakah kamu yakin ingin menghapus Jabatan ini?</p>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -849,39 +967,12 @@
 		</div>
 	</div>
 
-	<!-- Add StatusMaintenance Modal -->
-	<div class="modal fade" id="addStatusMaintenanceModal" tabindex="-1" role="dialog" aria-labelledby="addStatusMaintenanceLabel" aria-hidden="true">
-		<div class="modal-dialog" role="document">
-			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="addStatusMaintenanceLabel">Tambah Status Maintenance</h5>
-					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
-				</div>
-				<form id="addStatusMaintenanceForm" method="POST" action="<?= base_url('dashboard/data_master/statusMaintenance/create') ?>">
-					<?= csrf_field() ?>
-					<div class="modal-body">
-						<div class="form-group">
-							<label for="StatusMaintenanceName">Nama Status Maintenance</label>
-							<input type="text" class="form-control" id="StatusMaintenanceName" name="status_maintenance" required>
-						</div>
-					</div>
-					<div class="modal-footer">
-						<button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
-						<button type="submit" class="btn btn-primary">Simpan</button>
-					</div>
-				</form>
-			</div>
-		</div>
-	</div>
-
 	<!-- Edit StatusMaintenance Modal -->
 	<div class="modal fade" id="editStatusMaintenanceModal" tabindex="-1" role="dialog" aria-labelledby="editStatusMaintenanceLabel" aria-hidden="true">
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="editStatusMaintenanceLabel">Edit Status Maintenance</h5>
+					<h5 class="modal-title" id="editStatusMaintenanceLabel">Edit Status Pemeliharaan</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
@@ -891,7 +982,7 @@
 					<div class="modal-body">
 						<input type="hidden" id="editStatusMaintenanceId" name="StatusMaintenanceId">
 						<div class="form-group">
-							<label for="editStatusMaintenanceName">Nama Status Maintenance</label>
+							<label for="editStatusMaintenanceName">Nama Status Pemeliharaan</label>
 							<input type="text" class="form-control" id="editStatusMaintenanceName" name="status_maintenance" required>
 						</div>
 					</div>
@@ -909,7 +1000,7 @@
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="deleteStatusMaintenanceLabel">Hapus Status Maintenance</h5>
+					<h5 class="modal-title" id="deleteStatusMaintenanceLabel">Hapus Status Pemeliharaan</h5>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">&times;</span>
 					</button>
@@ -918,7 +1009,7 @@
 					<?= csrf_field() ?>
 					<div class="modal-body">
 						<input type="hidden" id="deleteStatusMaintenanceId" name="StatusMaintenanceId">
-						<p>Apakah kamu yakin ingin menghapus Status Maintenance ini?</p>
+						<p>Apakah kamu yakin ingin menghapus Status Pemeliharaan ini?</p>
 					</div>
 					<div class="modal-footer">
 						<button type="button" class="btn btn-secondary" data-dismiss="modal">Batal</button>
@@ -1022,7 +1113,7 @@
 
 	<!-- Page level plugins -->
 	<script src="<?= base_url('sb2/vendor/datatables/jquery.dataTables.min.js') ?>"></script>
-	<script src="<?= base_url('sb2vendor/datatables/dataTables.bootstrap4.min.js') ?>"></script>
+	<script src="<?= base_url('sb2/vendor/datatables/dataTables.bootstrap4.min.js') ?>"></script>
 
 	<!-- Page level custom scripts -->
 	<script src="<?= base_url('sb2/js/demo/datatables-demo.js') ?>"></script>
@@ -1042,7 +1133,7 @@
 			});
 		}, 3000);
 
-		$(document).redy(function() {
+		$(document).ready(function() {
 			// Add
 			$('addBtn').on('click', function() {
 				let table = $(this).data('table');

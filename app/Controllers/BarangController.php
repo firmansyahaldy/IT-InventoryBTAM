@@ -64,7 +64,7 @@ class BarangController extends BaseController
             'tgl_pembelian' => $this->request->getPost('tgl_pembelian'),
             'harga_pembelian' => $this->request->getPost('harga_pembelian'),
             'id_status_barang' => $this->request->getPost('status_barang'),
-            'kuantitas' => $this->request->getPost('kuantitas'),
+            'kuantitas' => 1,
             'id_kondisi' => $this->request->getPost('kondisi_barang'),
             'masa_garansi' => $this->request->getPost('masa_garansi'),
             'serial_number' => $this->request->getPost('serial_number'),
@@ -136,11 +136,13 @@ class BarangController extends BaseController
             // log_message('error', 'Barang with id_barang ' . $id_barang . ' not found');
             return false;
         }
+        $barangModel = new BarangModel();
+        $barang = $barangModel->find($id_barang);
 
         // Data maintenance yang akan dimasukkan
         $maintenanceData = [
             'id_barang' => $id_barang,
-            'kode_barang' => $kode_barang,
+            'nama_barang' => $barang['nama_barang'],
             'deskripsi' => $deskripsi_kerusakan,
             'maintenance_selanjutnya' => $maintenanceSelanjutnya, // Gunakan nilai dari tabel barang
             'id_status_maintenance' => 1,
@@ -150,12 +152,12 @@ class BarangController extends BaseController
 
         // Jika berhasil menambah data maintenance, kembalikan true
         if ($maintenanceModel->insert($maintenanceData)) {
-            // log_message('info', 'Data added to maintenance table successfully');
+            log_message('info', 'Data added to maintenance table successfully');
             return true;
         } else {
             // Jika gagal, catat log dan kembalikan false
-            // log_message('error', 'Failed to add data to maintenance table');
-            // log_message('error', 'Error details: ' . print_r($maintenanceModel->errors(), true));
+            log_message('error', 'Failed to add data to maintenance table');
+            log_message('error', 'Error details: ' . print_r($maintenanceModel->errors(), true));
             return false;
         }
     }
@@ -173,8 +175,8 @@ class BarangController extends BaseController
             return true;
         } else {
             // Jika gagal, catat log dan kembalikan false
-            // log_message('error', 'Failed to update barang with id_barang: ' . $id_barang);
-            // log_message('error', 'Error details: ' . print_r($barangModel->errors(), true));
+            log_message('error', 'Failed to update barang with id_barang: ' . $id_barang);
+            log_message('error', 'Error details: ' . print_r($barangModel->errors(), true));
             return false;
         }
     }
@@ -186,25 +188,23 @@ class BarangController extends BaseController
     public function update()
     {
         $kode_barang = $this->request->getPost('kode_barang');
-        $kondisi_barang = $this->request->getPost('kondisi_barang');
-        $kategori = $this->request->getPost('kategori');
+        $kondisi_barang = $this->request->getPost('edit_kondisi_barang');
         $maintenance_selanjutnya = $this->request->getPost('maintenance_selanjutnya');
         $id_barang = $this->request->getPost('id_barang');
 
         // Data yang akan diupdate
         $data = [
             // 'kode_barang' => $kode_barang,
-            'id_kategori' => $kategori,
             'id_kondisi' => $kondisi_barang,
-            'id_lokasi_barang' => $this->request->getPost('lokasi_barang'),
+            'id_lokasi_barang' => $this->request->getPost('edit_lokasi_barang'),
             'maintenance_selanjutnya' => $maintenance_selanjutnya,
         ];
-        // log_message('debug', 'Data yang dikirim: ' . print_r($this->request->getPost(), true));
+        log_message('debug', 'Data yang dikirim: ' . print_r($this->request->getPost(), true));
 
         // Update barang
         $isBarangUpdated = $this->updateBarang($id_barang, $data);
         // Debugging: tampilkan data yang akan dimasukkan
-        // log_message('debug', 'Data yang akan diupdate: ' . print_r($data, true));
+        log_message('debug', 'Data yang akan diupdate: ' . print_r($data, true));
 
         // Jika kondisi barang rusak, tambahkan data ke tabel maintenance
         if ($kondisi_barang == 2) {

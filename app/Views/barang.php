@@ -62,7 +62,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/laporan">
                     <i class="fas fa-fw fa-list"></i>
-                    <span>Maintenance</span></a>
+                    <span>Pemeliharaan</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/barang_keluar">
@@ -236,7 +236,7 @@
                                             <th>masa_garansi</th>
                                             <th>serial_number</th>
                                             <th>Lokasi Barang</th>
-                                            <th>Maintenance Selanjutnya</th>
+                                            <th>Pemeliharaan Selanjutnya</th>
                                             <?php if ($userRole === 'Super Admin'): ?>
                                                 <th>Aksi</th>
                                             <?php endif; ?>
@@ -342,8 +342,8 @@
 
                         <!-- Dropdown Kategori Barang -->
                         <div class="form-group">
-                            <label for="edit_kategori">kategori Barang</label>
-                            <select id="edit_kategori" name="kategori" class="form-control" required>
+                            <label for="kategori">kategori Barang</label>
+                            <select id="kategori" name="kategori" class="form-control" required>
                                 <option value="">-- Pilih Kategori --</option>
                                 <?php foreach ($kategoris as $kategori): ?>
                                     <option value="<?= $kategori['id_kategori']; ?>"><?= $kategori['kategori_item']; ?></option>
@@ -384,10 +384,6 @@
                                 <?php endforeach; ?>
                             </select>
                         </div>
-                        <div class="form-group">
-                            <label for="kuantitas">Kuantitas</label>
-                            <input type="number" id="kuantitas" name="kuantitas" class="form-control" required>
-                        </div>
                         <!-- Dropdown Kondisi Barang -->
                         <div class="form-group">
                             <label for="kondisi_barang">Kondisi Barang</label>
@@ -417,7 +413,7 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="maintenance_selanjutnya">Maintenance Selanjutnya</label>
+                            <label for="maintenance_selanjutnya">Pemeliharaan Selanjutnya</label>
                             <input type="date" id="maintenance_selanjutnya" name="maintenance_selanjutnya" class="form-control" required>
                         </div>
                         <button type="submit" class="btn btn-primary">Tambah</button>
@@ -443,16 +439,8 @@
                         <input type="hidden" id="edit_barang_id" name="id_barang">
                         <!-- Dropdown Kategori Barang -->
                         <div class="form-group">
-                            <label for="edit_kategori">kategori Barang</label>
-                            <select id="edit_kategori" name="kategori" class="form-control" required>
-                                <?php foreach ($kategoris as $kategori): ?>
-                                    <option value="<?= $kategori['id_kategori']; ?>"><?= $kategori['kategori_item']; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="form-group">
                             <label for="edit_kondisi_barang">Kondisi Barang</label>
-                            <select id="edit_kondisi_barang" name="kondisi_barang" class="form-control" required>
+                            <select id="edit_kondisi_barang" name="edit_kondisi_barang" class="form-control" required>
                                 <?php foreach ($kondisiBarangs as $kondisiBarang): ?>
                                     <option value="<?= $kondisiBarang['id_kondisi']; ?>"><?= $kondisiBarang['kondisi_item']; ?></option>
                                 <?php endforeach; ?>
@@ -464,14 +452,14 @@
                         </div>
                         <div class="form-group">
                             <label for="edit_lokasi_barang">Lokasi Barang</label>
-                            <select id="edit_lokasi_barang" name="lokasi_barang" class="form-control" required>
+                            <select id="edit_lokasi_barang" name="edit_lokasi_barang" class="form-control" required>
                                 <?php foreach ($lokasiBarangs as $lokasiBarang): ?>
                                     <option value="<?= $lokasiBarang['id_lokasi_barang']; ?>"><?= $lokasiBarang['lokasi_barang']; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="edit_maintenance_selanjutnya">Maintenance Selanjutnya</label>
+                            <label for="edit_maintenance_selanjutnya">Pemeliharaan Selanjutnya</label>
                             <input type="date" id="edit_maintenance_selanjutnya" name="maintenance_selanjutnya" class="form-control" required>
                         </div> 
                         <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
@@ -545,9 +533,9 @@
                     method: "GET",
                     success: function(response) {
                         // Isi form dengan data yang diterima dari server 
-                        $('#edit_barang_id').val(response.kode_barang);
-                        $('#edit_kategori').val(response.id_kategori); // Trigger untuk menampilkan field tambahan
+                        $('#edit_barang_id').val(response.id_barang);
                         $('#edit_maintenance_selanjutnya').val(response.maintenance_selanjutnya);
+                        $('#edit_lokasi_barang').val(response.id_lokasi_barang);
                         // Isi dan cek kondisi barang untuk menampilkan/menyembunyikan deskripsi kerusakan
                         $('#edit_kondisi_barang').val(response.id_kondisi).trigger('change');
                         toggleDeskripsiKerusakan(response.kondisi_barang);

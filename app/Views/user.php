@@ -61,7 +61,7 @@
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/laporan">
                     <i class="fas fa-fw fa-list"></i>
-                    <span>Maintenance</span></a>
+                    <span>Pemeliharaan</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/barang_keluar">
@@ -222,8 +222,9 @@
                                     <thead>
                                         <tr>
                                             <th>Username</th>
-                                            <th>Nama User</th>
+                                            <th>Nama Lengkap</th>
                                             <th>Role</th>
+                                            <th>Jabatan</th>
                                             <?php if ($userRole === 'Super Admin'): ?>
                                                 <th>Aksi</th>
                                             <?php endif; ?>
@@ -235,6 +236,7 @@
                                                 <td><?= esc($user['username']) ?></td>
                                                 <td><?= esc($user['nama_user']) ?></td>
                                                 <td><?= esc($user['user_role']) ?></td>
+                                                <td><?= esc($user['nama_jabatan']) ?></td>
                                                 <?php if ($userRole === 'Super Admin'): ?>
                                                     <td>
                                                         <!-- Tombol Edit -->
@@ -316,7 +318,7 @@
                             <input type="text" id="username" name="username" class="form-control" required>
                         </div>
                         <div class="form-group">
-                            <label for="nama_user">Nama User</label>
+                            <label for="nama_user">Nama Lengkap</label>
                             <input type="text" id="nama_user" name="nama_user" class="form-control" required>
                         </div>
                         <div class="form-group">
@@ -325,9 +327,17 @@
                         </div>
                         <div class="form-group">
                             <label for="role">Role</label>
-                            <select id="role" name="role" class="form-control" required>
+                            <select id="role" name="role" class="form-control">
                                 <?php foreach ($roles as $role): ?>
                                     <option value="<?= $role['id_role']; ?>"><?= $role['user_role']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="jabatan">Jabatan</label>
+                            <select id="jabatan" name="jabatan" class="form-control">
+                                <?php foreach ($jabatans as $jabatan): ?>
+                                    <option value="<?= $jabatan['id_jabatan']; ?>"><?= $jabatan['nama_jabatan']; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -354,17 +364,29 @@
                         <input type="hidden" id="edit_user_id" name="id_user">
                         <div class="form-group">
                             <label for="edit_username">Username</label>
-                            <input type="text" id="edit_username" name="username" class="form-control" readonly>
+                            <input type="text" id="edit_username" name="edit_username" class="form-control" readonly>
                         </div>
                         <div class="form-group">
-                            <label for="edit_nama_user">Nama User</label>
-                            <input type="text" id="edit_nama_user" name="nama_user" class="form-control">
+                            <label for="edit_password">Password Baru (Biarkan Jika Tidak ingin mengubah)</label>
+                            <input type="password" id="edit_password" name="edit_password" class="form-control" placeholder="Kosongkan jika tidak ingin mengubah">
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_nama_user">Nama Lengkap</label>
+                            <input type="text" id="edit_nama_user" name="edit_nama_user" class="form-control">
                         </div>
                         <div class="form-group">
                             <label for="edit_role">Role</label>
-                            <select id="role" name="role" class="form-control" required>
+                            <select id="edit_role" name="edit_role" class="form-control">
                                 <?php foreach ($roles as $role): ?>
                                     <option value="<?= $role['id_role']; ?>"><?= $role['user_role']; ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="edit_jabatan">Jabatan</label>
+                            <select id="edit_jabatan" name="edit_jabatan" class="form-control">
+                                <?php foreach ($jabatans as $jabatan): ?>
+                                    <option value="<?= $jabatan['id_jabatan']; ?>"><?= $jabatan['nama_jabatan']; ?></option>
                                 <?php endforeach; ?>
                             </select>
                         </div>
@@ -425,23 +447,29 @@
         $(document).on('click', '.editBtn', function() {
             var userId = $(this).data('id');
 
-            // Ambil data user dari backend (gunakan AJAX atau simpan di attribute data di tombol)
             $.ajax({
                 url: "<?= base_url('dashboard/user/getUser') ?>/" + userId,
                 method: "GET",
+                dataType: "json",
                 success: function(response) {
-                    console.log(response)
+                    // Isi modal dengan data
                     $('#edit_user_id').val(response.id_user);
                     $('#edit_username').val(response.username);
                     $('#edit_nama_user').val(response.nama_user);
-                    $('#edit_role').val(response.role);
+
+                    // Set value dropdown
+                    $('#edit_role').val(response.id_role);
+                    $('#edit_jabatan').val(response.id_jabatan);
+                },
+                error: function(xhr) {
+                    console.error("Error:", xhr.responseText);
                 }
             });
         });
 
         $(document).on('click', '.deleteBtn', function() {
             var userId = $(this).data('id');
-            $('#delete_user_id').val(userId); // Masukkan userId ke dalam input hidden
+            $('#delete_user_id').val(userId);
         });
 
         // Auto-close alert after 3 seconds

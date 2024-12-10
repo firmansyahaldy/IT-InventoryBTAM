@@ -20,29 +20,29 @@ class App extends BaseConfig
      * E.g., http://example.com/
      */
 
-    // public string $baseURL = 'http://localhost:8080/';
+    public string $baseURL = 'http://localhost:8080/';
     // public string $baseURL = 'http://192.168.0.113:8080/';
 
-    public string $baseURL;
+    // public string $baseURL;
 
-    public function __construct()
-    {
-        parent::__construct();
-        // Deteksi IP address server
-        $serverIP = $this->getServerIP();
-        // Set baseURL secara dinamis
-        $this->baseURL = "http://{$serverIP}:8080/";
-    }
+    // public function __construct()
+    // {
+    //     parent::__construct();
+    //     // Deteksi IP address server
+    //     $serverIP = $this->getServerIP();
+    //     // Set baseURL secara dinamis
+    //     $this->baseURL = "http://{$serverIP}:8080/";
+    // }
 
-    private function getServerIP()
-    {
-        // Ambil IP address dari server
-        if (isset($_SERVER['SERVER_ADDR'])) {
-            return $_SERVER['SERVER_ADDR']; // IP server
-        }
-        // Sebagai fallback jika SERVER_ADDR tidak tersedia
-        return gethostbyname(gethostname());
-    }
+    // private function getServerIP()
+    // {
+    //     // Ambil IP address dari server
+    //     if (isset($_SERVER['SERVER_ADDR'])) {
+    //         return $_SERVER['SERVER_ADDR']; // IP server
+    //     }
+    //     // Sebagai fallback jika SERVER_ADDR tidak tersedia
+    //     return gethostbyname(gethostname());
+    // }
 
 
     /**

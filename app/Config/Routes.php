@@ -59,6 +59,7 @@ $routes->group('dashboard', ['filter' => 'loginFilter'], function ($routes) {
     $routes->post('barang_keluar/save', 'BarangKeluarController::save');
     $routes->get('barang_keluar/getBarangKeluar/(:num)', 'BarangKeluarController::getBarangKeluar/$1');
     $routes->post('barang_keluar/returnItem/(:num)', 'BarangKeluarController::returnItem/$1');
+    // $routes->post('barang_keluar/returnItem', 'BarangKeluarController::returnItem');
     $routes->get('barang_keluar/filter', 'BarangKeluarController::filter');
     $routes->get('barang/getStok/(:num)', 'BarangKeluarController::getStok/$1');
 
@@ -71,4 +72,5 @@ $routes->group('dashboard', ['filter' => 'loginFilter'], function ($routes) {
     // Cetak Laporan
     $routes->get('laporancontroller/getData/(:any)', 'LaporanController::getData/$1');
     $routes->get('laporancontroller/export/(:any)/(:any)', 'LaporanController::export/$1/$2');
+    $routes->get('cetak_laporan_pengembalian', 'LaporanController::printReturnReport');
 });

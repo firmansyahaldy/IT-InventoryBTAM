@@ -14,9 +14,8 @@ class BarangMigration extends Migration
                 'unsigned' => true,
             ],
             'kode_barang' => [
-                'type' => 'INT',
+                'type' => 'VARCHAR',
                 'constraint' => 64,
-                'unsigned' => true,
             ],
             'id_kategori' => [
                 'type' => 'INT',

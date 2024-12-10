@@ -16,8 +16,11 @@ class BarangKeluarModel extends Model
         'id_barang',
         'nama_barang',
         'jumlah',
+        'id_kondisi',
         'tanggal_keluar',
-        'nama_penanggung_jawab',
+        'nama_penanggung_jawab',    
+        'lama_peminjaman',
+        'estimasi_pengembalian',
         'alasan',
         'status_pengembalian',
         'tanggal_kembali',
@@ -38,7 +41,8 @@ class BarangKeluarModel extends Model
 
     public function getBarangKeluar()
     {
-        return $this->select('barang_keluar.*, barang.kode_barang as kode barang, barang.nama_barang AS barang_nama')
+        return $this->select('barang_keluar.*, barang.kode_barang as kode barang, barang.nama_barang AS barang_nama, kondisi.kondisi_item as kondisi')
+            ->join('kondisi', 'kondisi.id_kondisi = barang_keluar.id_kondisi', 'left')
             ->join('barang', 'barang.id_barang = barang_keluar.id_barang')
             ->findAll();
     }
@@ -47,6 +51,13 @@ class BarangKeluarModel extends Model
     {
         return $this->where('id_barang_keluar', $id_barang_keluar)
             ->first();
+    }
+
+    public function getBarangKeluarData()
+    {
+        return $this->select('status_pengembalian, COUNT(*) as jumlah')
+                    ->groupBy('status_pengembalian')
+                    ->findAll();
     }
 
     // Validation
@@ -75,6 +86,14 @@ class BarangKeluarModel extends Model
                 'greater_than' => 'Jumlah barang harus lebih dari 0.'
             ]
         ],
+        'id_kondisi' => [
+            'rules' => 'required|integer|is_not_unique[kondisi.id_kondisi]',
+            'errors' => [
+                'required' => 'Kondisi barang harus dipilih.',
+                'integer' => 'ID kondisi barang harus berupa angka.',
+                'is_not_unique' => 'Kondisi barang yang dipilih tidak ditemukan di database.'
+            ]
+        ],
         'tanggal_keluar' => [
             'rules' => 'required|valid_date[Y-m-d]',
             'errors' => [
@@ -88,6 +107,14 @@ class BarangKeluarModel extends Model
                 'required' => 'Nama penanggung jawab harus diisi.',
                 'string' => 'Nama penanggung jawab harus berupa teks.',
                 'max_length' => 'Nama penanggung jawab tidak boleh lebih dari 50 karakter.'
+            ]
+        ],
+        'lama_peminjaman' => [
+            'rules' => 'required|integer|greater_than[0]',
+            'errors' => [
+                'required' => 'Lama peminjaman barang harus diisi.',
+                'integer' => 'Lama peminjaman barang harus berupa angka.',
+                'greater_than' => 'Lama peminjaman barang harus lebih dari 0.'
             ]
         ],
         'alasan' => [
@@ -114,7 +141,18 @@ class BarangKeluarModel extends Model
 
     // Callbacks
     protected $allowCallbacks = true;
-    protected $beforeInsert   = [];
+    protected $beforeInsert   = ['setEstimasiPengembalian'];
+
+    protected function setEstimasiPengembalian(array $data)
+    {
+        if (isset($data['data']['tanggal_keluar']) && isset($data['data']['lama_peminjaman'])) {
+            $tanggalKeluar = new \DateTime($data['data']['tanggal_keluar']);
+            $tanggalKeluar->modify('+' . $data['data']['lama_peminjaman'] . ' days');
+            $data['data']['estimasi_pengembalian'] = $tanggalKeluar->format('Y-m-d');
+        }
+        return $data;
+    }
+
     protected $afterInsert    = [];
     protected $beforeUpdate   = [];
     protected $afterUpdate    = [];

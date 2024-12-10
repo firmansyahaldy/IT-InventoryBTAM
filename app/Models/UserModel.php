@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Models;
+
 use CodeIgniter\Model;
 
 class UserModel extends Model
@@ -14,6 +16,7 @@ class UserModel extends Model
         'username',
         'password',
         'nama_user',
+        'id_jabatan',
         'id_role',
     ];
 
@@ -35,6 +38,7 @@ class UserModel extends Model
         'username' => 'required|is_unique[user.username]|min_length[3]|max_length[50]', // pastikan username unique
         'password' => 'required|min_length[8]|max_length[255]',
         'nama_user' => 'required|max_length[50]',
+        'id_jabatan' => 'required|integer',
         'id_role' => 'required|integer|is_not_unique[role.id_role]', // Pastikan id_role valid dan ada di tabel role
     ];
     protected $validationMessages   = [
@@ -84,15 +88,27 @@ class UserModel extends Model
 
     public function getUsersExport()
     {
-        return $this->select('user.username, user.nama_user, role.user_role')
+        return $this->select('user.username, user.nama_user, role.user_role, jabatan.nama_jabatan')
             ->join('role', 'user.id_role = role.id_role')
+            ->join('jabatan', 'user.id_jabatan = jabatan.id_jabatan')
             ->findAll();
     }
 
     public function getUsersWithRoles()
     {
-        return $this->join('role', 'user.id_role = role.id_role')
-            ->select('user.*, role.user_role')
+        return $this
+            ->join('role', 'user.id_role = role.id_role')
+            ->join('jabatan', 'user.id_jabatan = jabatan.id_jabatan')
+            ->select('user.*, role.user_role, jabatan.nama_jabatan')
             ->findAll();
+    }
+
+    public function getUser($id_user)
+    {
+        return $this->select('user.*, role.user_role, jabatan.nama_jabatan')
+            ->join('role', 'role.id_role = user.id_role', 'left')
+            ->join('jabatan', 'jabatan.id_jabatan = user.id_jabatan', 'left')
+            ->where('user.id_user', $id_user)
+            ->first();
     }
 }

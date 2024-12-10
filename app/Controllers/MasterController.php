@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\JabatanModel;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Models\RoleModel;
 use App\Models\KategoriModel;
@@ -29,6 +30,7 @@ class MasterController extends BaseController
         $lokasiModel = new LokasiBarangModel();
         $statusMaintenanceModel = new StatusMaintenanceModel();
         $statusBarangModel = new StatusBarangModel();
+        $jabatanModel = new JabatanModel();
 
         // Ambil semua data role dari tabel role
         $data['roles'] = $roleModel->findAll();
@@ -37,6 +39,7 @@ class MasterController extends BaseController
         $data['lokasis'] = $lokasiModel->findAll();
         $data['statusmaintenances'] = $statusMaintenanceModel->findAll();
         $data['statusbarangs'] = $statusBarangModel->findAll();
+        $data['jabatans'] = $jabatanModel->findAll();
 
         // Simpan role user yang sedang login ke variabel 'userRole'
         $data['userRole'] = $userRole;
@@ -60,6 +63,8 @@ class MasterController extends BaseController
                 return new \App\Models\StatusMaintenanceModel();
             case 'statusBarang':
                 return new \App\Models\StatusBarangModel();
+            case 'jabatan':
+                return new \App\Models\JabatanModel();
             default:
                 throw new \Exception("Model untuk tabel $table tidak ditemukan");
         }
@@ -103,5 +108,17 @@ class MasterController extends BaseController
         } else {
             return redirect()->back()->with('error', 'Gagal menghapus data');
         }
+    }
+
+    public function get($table, $id)
+    {
+        $model = $this->getModel($table); // Ambil model sesuai tabel
+        $data = $model->find($id); // Cari data berdasarkan ID
+
+        if ($data) {
+            return $this->response->setJSON($data); // Kembalikan data dalam format JSON
+        }
+
+        return $this->response->setStatusCode(404, 'Data tidak ditemukan');
     }
 }

@@ -68,6 +68,7 @@ class AuthController extends BaseController
                     'id_user'   => $user['id_user'],
                     'username'  => $user['username'],
                     'role'      => $user['user_role'], // role yang diperoleh dari tabel role
+                    'nama_user' => $user['nama_user'],
                     'logged_in' => true,
                     'login_time' => time()
                 ];

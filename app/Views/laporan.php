@@ -9,7 +9,7 @@
     <meta name="description" content="">
     <meta name="author" content="">
 
-    <title>Laporan Maintenance</title>
+    <title>Laporan Pemeliharaan</title>
 
     <!-- Custom fonts for this template -->
     <link href="<?= base_url('sb2/vendor/fontawesome-free/css/all.min.css') ?>" rel="stylesheet" type="text/css">
@@ -62,7 +62,7 @@
             <li class="nav-item active">
                 <a class="nav-link" href="/dashboard/laporan">
                     <i class="fas fa-fw fa-list"></i>
-                    <span>Maintenance</span></a>
+                    <span>Pemeliharaan</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="/dashboard/barang_keluar">
@@ -183,14 +183,14 @@
 
                     <!-- Page Heading -->
                     <div class="d-sm-flex align-items-center justify-content-between mb-4">
-                        <h1 class="h3 mb-0 text-gray-800">Laporan Maintenance</h1>
+                        <h1 class="h3 mb-0 text-gray-800">Laporan Pemeliharaan</h1>
                         <div class="d-flex flex-row">
                             <?php if ($userRole === 'Super Admin' || $userRole === 'Admin'): ?>
                                 <div class="card-header py-3 d-flex justify-content-between">
                                     <button id="buttonPerbaikan" class="btn btn-primary">Data Perbaikan</button>
                                 </div>
                                 <div class="card-header py-3 d-flex justify-content-between">
-                                    <button id="buttonMaintenance" class="btn btn-primary">Data Maintenance</button>
+                                    <button id="buttonMaintenance" class="btn btn-primary">Data Pemeliharaan</button>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -220,7 +220,7 @@
                     <!-- DataTales Example -->
                     <div class="card shadow mb-4">
                         <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                            <h6 class="m-0 font-weight-bold text-primary">Data Tables Laporan</h6>
+                            <h6 class="m-0 font-weight-bold text-primary">Data Tables Pemeliharaan</h6>
                             <a href="<?= base_url('dashboard/maintenance/exportRepairPDF') ?>" class="btn btn-danger">
                                 <i class="fas fa-file-pdf"></i> Cetak Laporan Perbaikan
                             </a>
@@ -232,12 +232,13 @@
                                     <thead>
                                         <tr>
                                             <th>ID Barang</th>
+                                            <th>Nama Barang</th>
                                             <th>Deskripsi</th>
-                                            <th>Tanggal Maintenance</th>
-                                            <th>Status Maintenance</th>
+                                            <th>Tanggal Pemeliharaan</th>
+                                            <th>Status Pemeliharaan</th>
                                             <th>Tanggal Diupdated</th>
                                             <th>Lokasi Barang</th>
-                                            <th>Maintened By</th>
+                                            <th>Dikerjakan Oleh</th>
                                             <?php if ($userRole === 'Super Admin' || $userRole === 'Admin'): ?>
                                                 <th>Aksi</th>
                                             <?php endif; ?>
@@ -247,6 +248,7 @@
                                         <?php foreach ($maintenances as $maintenance) : ?>
                                             <tr>
                                                 <td><?= esc($maintenance['id_barang']) ?></td>
+                                                <td><?= esc($maintenance['nama_barang']) ?></td>
                                                 <td><?= esc($maintenance['deskripsi']) ?></td>
                                                 <td><?= esc($maintenance['maintenance_selanjutnya']) ?></td>
                                                 <td><?= esc($maintenance['status_maintenance']) ?></td>
@@ -322,7 +324,7 @@
         <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="editMaintenanceModalLabel">Edit Maintenance</h5>
+                    <h5 class="modal-title" id="editMaintenanceModalLabel">Edit Pemeliharaan</h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
@@ -339,17 +341,8 @@
                             <label for="edit_deskripsi">Deskripsi</label>
                             <textarea id="edit_deskripsi" name="deskripsi" class="form-control" required></textarea>
                         </div>
-                        <!-- Dropdown lokasi Barang -->
                         <div class="form-group">
-                            <label for="edit_lokasi_barang">Lokasi Barang</label>
-                            <select id="edit_lokasi_barang" name="id_lokasi_barang" class="form-control" required>
-                                <?php foreach ($lokasiBarangs as $lokasiBarang): ?>
-                                    <option value="<?= $lokasiBarang['id_lokasi_barang']; ?>"><?= $lokasiBarang['lokasi_barang']; ?></option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="edit_status">Status Maintenance</label>
+                            <label for="edit_status">Status Pemeliharaan</label>
                             <select id="edit_status" name="id_status_maintenance" class="form-control" required>
                                 <?php foreach ($statusMaintenances as $statusMaintenance): ?>
                                     <option value="<?= $statusMaintenance['id_status_maintenance']; ?>"><?= $statusMaintenance['status_maintenance']; ?></option>
@@ -375,7 +368,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <p>Apakah Anda yakin ingin menghapus data maintenance ini?</p>
+                    <p>Apakah Anda yakin ingin menghapus data Pemeliharaan ini?</p>
                     <form id="deleteMaintenanceForm" method="POST" action="">
                         <?= csrf_field() ?>
                         <input type="hidden" id="deleteIdMaintenance" name="id_maintenance">
@@ -412,10 +405,10 @@
             // Event listener untuk tombol filter
             $('#buttonPerbaikan').on('click', function() {
                 // Gunakan fungsi search() DataTables untuk melakukan filtering
-                table.columns(3).search('Membutuhkan Perbaikan').draw();
+                table.columns(4).search('Membutuhkan Perbaikan').draw();
             });
             $('#buttonMaintenance').on('click', function() {
-                table.columns(3).search('').draw(); // Kosongkan search untuk menampilkan semua data
+                table.columns(4).search('').draw(); // Kosongkan search untuk menampilkan semua data
             });
         });
 
@@ -425,12 +418,15 @@
             $.ajax({
                 url: "<?= base_url('dashboard/maintenance/getMaintenance') ?>/" + maintenanceId,
                 method: "GET",
+                dataType: "json",
                 success: function(response) {
                     $('#edit_maintenance_id').val(response.id_maintenance);
                     $('#edit_id_barang').val(response.id_barang);
                     $('#edit_deskripsi').val(response.deskripsi);
                     $('#edit_status').val(response.id_status_maintenance);
-                    $('#edit_lokasi_barang').val(response.id_lokasi_barang);
+                },
+                error: function(xhr) {
+                    console.error("Error:", xhr.responseText);
                 }
             });
         });

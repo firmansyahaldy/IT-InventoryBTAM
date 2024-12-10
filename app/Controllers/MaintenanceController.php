@@ -63,17 +63,17 @@ class MaintenanceController extends BaseController
 
             // Update barang
             if ($barangModel->update($id_barang, $data)) {
-                // log_message('info', 'Maintenance selanjutnya berhasil diupdate di tabel barang.');
+                log_message('info', 'Maintenance selanjutnya berhasil diupdate di tabel barang.');
                 return true;
             } else {
                 // Log error jika update gagal
                 $errors = $barangModel->errors();
-                // log_message('error', 'Gagal mengupdate maintenance selanjutnya di tabel barang: ' . implode(', ', $errors));
-                // log_message('error', 'Error details: ' . print_r($barangModel->errors(), true));
+                log_message('error', 'Gagal mengupdate maintenance selanjutnya di tabel barang: ' . implode(', ', $errors));
+                log_message('error', 'Error details: ' . print_r($barangModel->errors(), true));
                 return false;
             }
         } else {
-            // log_message('error', 'Barang dengan ID ' . $id_barang . ' tidak ditemukan.');
+            log_message('error', 'Barang dengan ID ' . $id_barang . ' tidak ditemukan.');
             return false;
         }
     }
@@ -84,11 +84,11 @@ class MaintenanceController extends BaseController
         $id_barang = $this->request->getPost('id_barang');
         $id_status_maintenance = $this->request->getPost('id_status_maintenance');
         $new_maintenance_selanjutnya = date('Y-m-d', strtotime('+1 year')); // Maintenance selanjutnya diatur 1 tahun setelah sekarang
-        $kondisi_barang = 1; // Update kondisi barang menjadi 'Baik'
+        $kondisi_barang = 1; // Default kondisi barang menjadi 'Baik'
         // Ambil username pengguna yang login dari session
         $username = session()->get('username');
 
-        // log_message('info', 'ID Barang: ' . print_r($id_barang, true));
+        log_message('info', 'ID Barang: ' . print_r($id_barang, true));
 
         if (!$id_barang) {
             return redirect()->back()->with('error', 'Kode Barang tidak ditemukan.');
@@ -97,7 +97,7 @@ class MaintenanceController extends BaseController
         // Ambil data barang dari database
         $barangModel = new BarangModel();
         $barangData = $barangModel->select('maintenance_selanjutnya')
-            ->where('id_barang', $id_barang)
+        ->where('id_barang', $id_barang)
             ->first();
 
         // Jika data barang ditemukan, tambahkan 1 tahun pada field maintenance_selanjutnya
@@ -110,11 +110,15 @@ class MaintenanceController extends BaseController
             // Jika id_status_maintenance selesai, update data barang
             if ($id_status_maintenance == 3) {
                 $updateBarang = $this->updateBarang($id_barang, $new_maintenance_selanjutnya, $kondisi_barang);
+            } elseif ($id_status_maintenance == 5) {
+                // Jika id_status_maintenance == 5, update kondisi_barang menjadi 3
+                $kondisi_barang = 3;
+                $updateBarang = $this->updateBarang($id_barang, $new_maintenance_selanjutnya, $kondisi_barang);
             } else {
-                $updateBarang = true; // Jika status bukan 'selesai', tidak perlu update barang
+                $updateBarang = true; // Jika status bukan 'selesai' atau '5', tidak perlu update barang
             }
         } else {
-            // log_message('error', 'Maintenance selanjutnya tidak ditemukan untuk ID barang: ' . $id_barang);
+            log_message('error', 'Maintenance selanjutnya tidak ditemukan untuk ID barang: ' . $id_barang);
             return redirect()->back()->with('error', 'Data barang tidak ditemukan.');
         }
 
@@ -150,13 +154,13 @@ class MaintenanceController extends BaseController
 
         // Update maintenance
         if ($maintenanceModel->where('id_barang', $id_barang)->set($data)->update()) {
-            // log_message('info', 'Status berhasil diupdate di tabel maintenance.');
+            log_message('info', 'Status berhasil diupdate di tabel maintenance.');
             return true;
         } else {
             // Log error jika update gagal
             $errors = $maintenanceModel->errors();
-            // log_message('error', 'Gagal mengupdate status di tabel maintenance: ' . implode(', ', $errors));
-            // log_message('error', 'Error details: ' . print_r($maintenanceModel->errors(), true));
+            log_message('error', 'Gagal mengupdate status di tabel maintenance: ' . implode(', ', $errors));
+            log_message('error', 'Error details: ' . print_r($maintenanceModel->errors(), true));
             return false;
         }
     }
@@ -177,8 +181,8 @@ class MaintenanceController extends BaseController
             return redirect()->to('/dashboard/laporan')->with('success', 'Maintenance berhasil dihapus.');
         } else {
             // Log error details
-            // log_message('error', 'Failed to delete maintenance with ID: ' . $id_maintenance);
-            // log_message('error', 'Error details: ' . print_r($maintenanceModel->errors(), true));
+            log_message('error', 'Failed to delete maintenance with ID: ' . $id_maintenance);
+            log_message('error', 'Error details: ' . print_r($maintenanceModel->errors(), true));
 
             return redirect()->back()->with('error', 'Gagal menghapus maintenance.');
         }
@@ -220,9 +224,9 @@ class MaintenanceController extends BaseController
                         <th>ID Barang</th>
                         <th>Nama Barang</th>
                         <th>Deskripsi</th>
-                        <th>Created At</th>
-                        <th>Status Maintenance</th>
-                        <th>Update At</th>
+                        <th>Pemeliharaan selanjutnya</th>
+                        <th>Status Pemeliharaan</th>
+                        <th>Selesai Pemeliharaan</th>
                     </tr>
                 </thead>
                 <tbody>';
@@ -251,45 +255,4 @@ class MaintenanceController extends BaseController
         $this->response->setContentType('application/pdf');
         $pdf->Output('Laporan_Perbaikan.pdf', 'D');
     }
-
-
-    // public function exportExcel()
-    // {
-    //     ob_start();
-    //     $maintenance = $this->maintenanceModel->getMaintenanceWithStatus(); // Ambil data barang beserta relasi
-
-    //     // Inisialisasi Spreadsheet
-    //     $spreadsheet = new Spreadsheet();
-    //     $sheet = $spreadsheet->getActiveSheet();
-    //     $sheet->setCellValue('A1', 'ID Maintenance');
-    //     $sheet->setCellValue('B1', 'ID Barang');
-    //     $sheet->setCellValue('C1', 'Deskripsi');
-    //     $sheet->setCellValue('D1', 'Created At');
-    //     $sheet->setCellValue('E1', 'Status Maintenance');
-    //     $sheet->setCellValue('F1', 'Update At');
-    //     // Isi data ke dalam sheet
-    //     $row = 2;
-    //     foreach ($maintenance as $item) {
-    //         $sheet->setCellValue('A' . $row, $item['id_maintenance']);
-    //         $sheet->setCellValue('B' . $row, $item['id_barang']);
-    //         $sheet->setCellValue('C' . $row, $item['deskripsi']);
-    //         $sheet->setCellValue('D' . $row, $item['created_at']);
-    //         $sheet->setCellValue('E' . $row, $item['status_maintenance']);
-    //         $sheet->setCellValue('F' . $row, $item['updated_at']  ?? 'N/A');
-    //         $row++;
-    //     }
-
-    //     // Output Excel
-    //     $writer = new Xlsx($spreadsheet);
-    //     $filename = 'Daftar_Maintenance.xlsx';
-
-    //     ob_end_clean();
-
-    //     // Pengaturan header untuk file Excel
-    //     header('Content-Type: application/vnd.ms-excel');
-    //     header('Content-Disposition: attachment;filename="' . $filename . '"');
-    //     header('Cache-Control: max-age=0');
-
-    //     $writer->save('php://output');
-    // }
 }
